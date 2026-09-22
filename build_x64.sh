@@ -1,30 +1,42 @@
-SRC=x64
-ASM=$SRC/asm
-COMM=common
-BUILD_DIR=build_dir
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
 
-# make directory
-if [ -d "$BUILD_DIR" ]; then
-    rm -rf $BUILD_DIR/*
-else
-    mkdir $BUILD_DIR
-fi
+BUILD_DIR=${BUILD_DIR:-build_dir/x64}
+OUTPUT=${OUTPUT:-cpufp}
+CC=${CC:-cc}
+CXX=${CXX:-c++}
+arch_flags=(-march=x86-64 -mtune=generic)
+link_flags=(-pthread -Wl,-z,noexecstack)
+mkdir -p "$BUILD_DIR"
 
-# build common tools
-g++ -O3 -c $COMM/table.cpp -o $BUILD_DIR/table.o
-g++ -O3 -pthread -c $COMM/smtl.cpp -o $BUILD_DIR/smtl.o
+"$CXX" "${arch_flags[@]}" -std=c++11 -O3 -c common/table.cpp -o "$BUILD_DIR/table.o"
+"$CXX" "${arch_flags[@]}" -std=c++11 -O3 -pthread -c common/smtl.cpp -o "$BUILD_DIR/smtl.o"
+"$CC" "${arch_flags[@]}" -O2 x64/cpuid.c -o "$BUILD_DIR/cpuid"
+"$CC" "${arch_flags[@]}" -O2 -DCPUFP_CPUID_NO_MAIN -c x64/cpuid.c -o "$BUILD_DIR/features.o"
 
-# gen benchmark macro according to cpuid feature
-gcc $SRC/cpuid.c -o $BUILD_DIR/cpuid
-SIMD_MACRO=" "
-SIMD_OBJ=" "
-for SIMD in `$BUILD_DIR/cpuid`;
-do
-    SIMD_MACRO="$SIMD_MACRO-D$SIMD "
-    SIMD_OBJ="$SIMD_OBJ$BUILD_DIR/$SIMD.o "
-    g++ -c $ASM/$SIMD.S -o $BUILD_DIR/$SIMD.o
+# Compile every kernel the assembler supports. Execution is gated at runtime,
+# allowing a binary to move to another CPU without using build-host features.
+simd_macros=()
+simd_objects=()
+for source in x64/asm/*.S; do
+    simd=${source##*/}
+    simd=${simd%.S}
+    if "$CC" "${arch_flags[@]}" -c "$source" -o "$BUILD_DIR/$simd.o" 2>"$BUILD_DIR/$simd.log"; then
+        simd_macros+=("-D$simd")
+        simd_objects+=("$BUILD_DIR/$simd.o")
+    else
+        cat "$BUILD_DIR/$simd.log" >&2
+        if [[ $simd == _SSE_ || $simd == _SSE2_ ]]; then
+            exit 1
+        fi
+        echo "Warning: assembler cannot build $simd; skipping this ISA." >&2
+    fi
 done
 
-# compile cpufp
-g++ -O3 -I$COMM $SIMD_MACRO -c $SRC/cpufp.cpp -o $BUILD_DIR/cpufp.o
-g++ -O3 -z noexecstack -pthread -o cpufp $BUILD_DIR/cpufp.o $BUILD_DIR/smtl.o $BUILD_DIR/table.o $SIMD_OBJ
+"$CXX" "${arch_flags[@]}" -std=c++11 -O3 -Icommon "${simd_macros[@]}" \
+    -c x64/cpufp.cpp -o "$BUILD_DIR/cpufp.o"
+"$CXX" "${arch_flags[@]}" "${link_flags[@]}" -o "$OUTPUT" \
+    "$BUILD_DIR/cpufp.o" "$BUILD_DIR/features.o" "$BUILD_DIR/smtl.o" \
+    "$BUILD_DIR/table.o" "${simd_objects[@]}"
+echo "Built $OUTPUT (x86-64)."

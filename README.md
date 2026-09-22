@@ -2,7 +2,7 @@
 
 This is a cpu tool for benchmarking the peak performance of floating-points and AI ISAs.
 
-It can automatically sense the local SIMD|DSA ISAs while compiling.
+It automatically detects the usable SIMD|DSA ISAs. On x86-64, detection runs at program startup and checks both CPU features and operating-system support.
 
 ## Support OS and ISA
 
@@ -101,9 +101,30 @@ dst[63:0] := src3[63:0] + src1[63:0] * src2[63:0]
 
 ## How to build
 
-build x64 version:
+build x64 version (Linux):
 
-`./build_x64.sh`
+```sh
+./build_x64.sh
+./cpufp '--thread_pool=[0]'
+```
+
+The x64 build includes every kernel supported by the assembler, with a warning
+for newer ISAs it cannot assemble. `CC`, `CXX`, `BUILD_DIR` and `OUTPUT` can be
+set in the environment. Generic C/C++ code targets baseline x86-64. At runtime,
+CPUID leaf limits, XSAVE/OSXSAVE, XCR0, AVX512VL for narrower AVX-512 kernels,
+and Linux AMX permission determine which benchmarks are registered. AVX-512
+is skipped if its XCR0 state is not enabled.
+
+AMX permission is requested again in the benchmark process before workers are
+created; failure skips AMX while retaining other usable ISAs. See the
+[Linux XSTATE documentation](https://www.kernel.org/doc/html/latest/arch/x86/xstate.html).
+
+Run the x64 feature-detection and registration regression tests (also supported
+on non-x86 hosts):
+
+```sh
+bash tests/test_x64.sh
+```
 
 build arm64 version:
 

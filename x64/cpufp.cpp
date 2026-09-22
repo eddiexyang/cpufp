@@ -1,5 +1,6 @@
 #include "table.hpp"
 #include "smtl.hpp"
+#include "features.h"
 
 #include <unistd.h>
 #include <cstdint>
@@ -11,7 +12,6 @@
 #include <iomanip>
 
 #if defined(_AMX_INT8_) || defined(_AMX_BF16_) || defined(_AMX_FP16_)
-#include <sys/syscall.h>
 #define _AMX_TILE_
 #endif
 
@@ -84,12 +84,12 @@ extern "C"
 #endif
 
 #ifdef _AVX_VNNI_INT16_
-    void avx_vnni_int16_256b_dp4a_s32s16u16(int64_t, void *params);
-    void avx_vnni_int16_128b_dp4a_s32s16u16(int64_t, void *params);
-    void avx_vnni_int16_256b_dp4a_s32u16s16(int64_t, void *params);
-    void avx_vnni_int16_128b_dp4a_s32u16s16(int64_t, void *params);
-    void avx_vnni_int16_256b_dp4a_s32u16u16(int64_t, void *params);
-    void avx_vnni_int16_128b_dp4a_s32u16u16(int64_t, void *params);
+    void avx_vnni_int16_256b_dp2a_s32s16u16(int64_t, void *params);
+    void avx_vnni_int16_128b_dp2a_s32s16u16(int64_t, void *params);
+    void avx_vnni_int16_256b_dp2a_s32u16s16(int64_t, void *params);
+    void avx_vnni_int16_128b_dp2a_s32u16s16(int64_t, void *params);
+    void avx_vnni_int16_256b_dp2a_s32u16u16(int64_t, void *params);
+    void avx_vnni_int16_128b_dp2a_s32u16u16(int64_t, void *params);
 #endif
 
 #ifdef _AMX_INT8_
@@ -154,6 +154,7 @@ static int num_simd_512b = 0;
 static int num_simd_256b = 0;
 static int num_simd_128b = 0;
 static vector<cpubm_t> bm_list;
+static uint32_t runtime_features;
 
 static double get_time(struct timespec *start,
     struct timespec *end)
@@ -171,6 +172,13 @@ static void reg_new_isa(std::string isa,
     void *params,
     void (*bench)(int64_t, void*))
 {
+    if (!cpufp_feature_available(runtime_features, isa.c_str(), vlen.c_str()))
+        return;
+    if (vlen == "DSA") ++num_dsa;
+    else if (vlen == "512b") ++num_simd_512b;
+    else if (vlen == "256b") ++num_simd_256b;
+    else if (vlen == "128b") ++num_simd_128b;
+
     cpubm_t new_one;
     new_one.isa = isa;
     new_one.vlen = vlen;
@@ -405,11 +413,11 @@ static void parse_thread_pool(char *sets,
 
 static void cpufp_register_isa()
 {
+    runtime_features = cpufp_detect_features(1);
 
 /* Register AMX DSA */
 #ifdef _AMX_TILE_
     init_tile_cfg();
-    syscall(SYS_arch_prctl, 0x1023, 18);
 #endif
 
 #ifdef _AMX_INT8_
@@ -421,19 +429,16 @@ static void cpufp_register_isa()
         0x2500000LL, 131072LL, &__tilecfg, amx_int8_mm_s32u8s8);
     reg_new_isa("AMX_INT8", "DSA", "MM(s32,u8,u8)", "OPS",
         0x2500000LL, 131072LL, &__tilecfg, amx_int8_mm_s32u8u8);
-    num_dsa += 4;
 #endif
 
 #ifdef _AMX_BF16_
     reg_new_isa("AMX_BF16", "DSA", "MM(f32,bf16,bf16)", "FLOPS",
         0x2500000LL, 65536LL, &__tilecfg, amx_bf16_mm_f32bf16bf16);
-    num_dsa++;
 #endif
 
 #ifdef _AMX_FP16_
     reg_new_isa("AMX_FP16", "DSA", "MM(f32,f16,f16)", "FLOPS",
         0x2500000LL, 65536LL, &__tilecfg, amx_fp16_mm_f32f16f16);
-    num_dsa++;
 #endif
 
 /* Register 512b SIMD ISA */
@@ -442,19 +447,16 @@ static void cpufp_register_isa()
         0x20000000LL, 2048LL, NULL, avx512_vnni_512b_dp4a_s32u8s8);
     reg_new_isa("AVX512_VNNI", "512b", "DP2A(s32,s16,s16)", "OPS",
         0x20000000LL, 1024LL, NULL, avx512_vnni_512b_dp2a_s32s16s16);
-    num_simd_512b += 2;
 #endif
 
 #ifdef _AVX512_BF16_
     reg_new_isa("AVX512_BF16", "512b", "DP2A(f32,bf16,bf16)", "FLOPS",
         0x20000000LL, 1024LL, NULL, avx512_bf16_512b_dp2a_f32bf16bf16);
-    num_simd_512b++;
 #endif
 
 #ifdef _AVX512_FP16_
     reg_new_isa("AVX512_FP16", "512b", "FMA(f16,f16,f16)", "FLOPS",
         0x20000000LL, 1024LL, NULL, avx512_fp16_512b_fma_f16f16f16);
-    num_simd_512b++;
 #endif
 
 #ifdef _AVX512F_
@@ -466,20 +468,17 @@ static void cpufp_register_isa()
         0x20000000LL, 256LL, NULL, avx512f_512b_add_mul_f32f32_f32);
     reg_new_isa("AVX512F", "512b", "ADD(MUL(f64,f64),f64)", "FLOPS",
         0x20000000LL, 128LL, NULL, avx512f_512b_add_mul_f64f64_f64);
-    num_simd_512b += 4;
 #endif
 
 /* Register 256b SIMD ISA */
 #ifdef _AVX512_VNNI_
     reg_new_isa("AVX512_VNNI", "256b", "DP4A(s32,u8,s8)", "OPS",
         0x20000000LL, 1024LL, NULL, avx512_vnni_256b_dp4a_s32u8s8);
-    num_simd_256b++;
 #endif
 
 #ifdef _AVX_VNNI_
     reg_new_isa("AVX_VNNI", "256b", "DP4A(s32,u8,s8)", "OPS",
         0x20000000LL, 1024LL, NULL, avx_vnni_256b_dp4a_s32u8s8);
-    num_simd_256b++;
 #endif
 
 #ifdef _AVX_VNNI_INT8_
@@ -489,19 +488,16 @@ static void cpufp_register_isa()
         0x20000000LL, 1024LL, NULL, avx_vnni_int8_256b_dp4a_s32s8u8);
     reg_new_isa("AVX_VNNI_INT8", "256b", "DP4A(s32,u8,u8)", "OPS",
         0x20000000LL, 1024LL, NULL, avx_vnni_int8_256b_dp4a_s32u8u8);
-    num_simd_256b += 3;
 #endif
 
 #ifdef _AVX512_VNNI_
     reg_new_isa("AVX512_VNNI", "256b", "DP2A(s32,s16,s16)", "OPS",
         0x20000000LL, 512LL, NULL, avx512_vnni_256b_dp2a_s32s16s16);
-    num_simd_256b++;
 #endif
 
 #ifdef _AVX_VNNI_
     reg_new_isa("AVX_VNNI", "256b", "DP2A(s32,s16,s16)", "OPS",
         0x20000000LL, 512LL, NULL, avx_vnni_256b_dp2a_s32s16s16);
-    num_simd_256b++;
 #endif
 
 #ifdef _AVX_VNNI_INT16_
@@ -511,19 +507,16 @@ static void cpufp_register_isa()
         0x20000000LL, 512LL, NULL, avx_vnni_int16_256b_dp2a_s32u16s16);
     reg_new_isa("AVX_VNNI_INT16", "256b", "DP2A(s32,u16,u16)", "OPS",
         0x20000000LL, 512LL, NULL, avx_vnni_int16_256b_dp2a_s32u16u16);
-    num_simd_256b += 3;
 #endif
 
 #ifdef _AVX512_BF16_
     reg_new_isa("AVX512_BF16", "256b", "DP2A(f32,bf16,bf16)", "FLOPS",
         0x20000000LL, 512LL, NULL, avx512_bf16_256b_dp2a_f32bf16bf16);
-    num_simd_256b++;
 #endif
 
 #ifdef _AVX512_FP16_
     reg_new_isa("AVX512_FP16", "256b", "FMA(f16,f16,f16)", "FLOPS",
         0x20000000LL, 512LL, NULL, avx512_fp16_256b_fma_f16f16f16);
-    num_simd_256b++;
 #endif
 
 #ifdef _FMA_
@@ -531,7 +524,6 @@ static void cpufp_register_isa()
         0x20000000LL, 256LL, NULL, fma_256b_fma_f32f32f32);
     reg_new_isa("FMA", "256b", "FMA(f64,f64,f64)", "FLOPS",
         0x20000000LL, 128LL, NULL, fma_256b_fma_f64f64f64);
-    num_simd_256b += 2;
 #endif
 
 #ifdef _AVX_
@@ -539,20 +531,17 @@ static void cpufp_register_isa()
         0x20000000LL, 128LL, NULL, avx_256b_add_mul_f32f32_f32);
     reg_new_isa("AVX", "256b", "ADD(MUL(f64,f64),f64)", "FLOPS",
         0x20000000LL, 64LL, NULL, avx_256b_add_mul_f64f64_f64);
-    num_simd_256b += 2;
 #endif
 
 /* Register 128b SIMD ISA */
 #ifdef _AVX512_VNNI_
     reg_new_isa("AVX512_VNNI", "128b", "DP4A(s32,u8,s8)", "OPS",
         0x20000000LL, 512LL, NULL, avx512_vnni_128b_dp4a_s32u8s8);
-    num_simd_128b++;
 #endif
 
 #ifdef _AVX_VNNI_
     reg_new_isa("AVX_VNNI", "128b", "DP4A(s32,u8,s8)", "OPS",
         0x20000000LL, 512LL, NULL, avx_vnni_128b_dp4a_s32u8s8);
-    num_simd_128b++;
 #endif
 
 #ifdef _AVX_VNNI_INT8_
@@ -562,19 +551,16 @@ static void cpufp_register_isa()
         0x20000000LL, 512LL, NULL, avx_vnni_int8_128b_dp4a_s32s8u8);
     reg_new_isa("AVX_VNNI_INT8", "128b", "DP4A(s32,u8,u8)", "OPS",
         0x20000000LL, 512LL, NULL, avx_vnni_int8_128b_dp4a_s32u8u8);
-    num_simd_128b += 3;
 #endif
 
 #ifdef _AVX512_VNNI_
     reg_new_isa("AVX512_VNNI", "128b", "DP2A(s32,s16,s16)", "OPS",
         0x20000000LL, 256LL, NULL, avx512_vnni_128b_dp2a_s32s16s16);
-    num_simd_128b++;
 #endif
 
 #ifdef _AVX_VNNI_
     reg_new_isa("AVX_VNNI", "128b", "DP2A(s32,s16,s16)", "OPS",
         0x20000000LL, 256LL, NULL, avx_vnni_128b_dp2a_s32s16s16);
-    num_simd_128b++;
 #endif
 
 #ifdef _AVX_VNNI_INT16_
@@ -584,19 +570,16 @@ static void cpufp_register_isa()
         0x20000000LL, 256LL, NULL, avx_vnni_int16_128b_dp2a_s32u16s16);
     reg_new_isa("AVX_VNNI_INT16", "128b", "DP2A(s32,u16,u16)", "OPS",
         0x20000000LL, 256LL, NULL, avx_vnni_int16_128b_dp2a_s32u16u16);
-    num_simd_128b += 3;
 #endif
 
 #ifdef _AVX512_BF16_
     reg_new_isa("AVX512_BF16", "128b", "DP2A(f32,bf16,bf16)", "FLOPS",
         0x20000000LL, 256LL, NULL, avx512_bf16_128b_dp2a_f32bf16bf16);
-    num_simd_128b++;
 #endif
 
 #ifdef _AVX512_FP16_
     reg_new_isa("AVX512_FP16", "128b", "FMA(f16,f16,f16)", "FLOPS",
         0x20000000LL, 256LL, NULL, avx512_fp16_128b_fma_f16f16f16);
-    num_simd_128b++;
 #endif
 
 #ifdef _FMA_
@@ -604,19 +587,16 @@ static void cpufp_register_isa()
         0x20000000LL, 128LL, NULL, fma_128b_fma_f32f32f32);
     reg_new_isa("FMA", "128b", "FMA(f64,f64,f64)", "FLOPS",
         0x20000000LL, 64LL, NULL, fma_128b_fma_f64f64f64);
-    num_simd_128b += 2;
 #endif
 
 #ifdef _SSE_
     reg_new_isa("SSE", "128b", "ADD(MUL(f32,f32),f32)", "FLOPS",
         0x20000000LL, 64LL, NULL, sse_128b_add_mul_f32f32_f32);
-    num_simd_128b++;
 #endif
 
 #ifdef _SSE2_
     reg_new_isa("SSE2", "128b", "ADD(MUL(f64,f64),f64)", "FLOPS",
         0x20000000LL, 32LL, NULL, sse2_128b_add_mul_f64f64_f64);
-    num_simd_128b++;
 #endif
 }
 
