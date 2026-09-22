@@ -1,8 +1,11 @@
-.globl avx512_fp16_512b_fma_f16f16f16
-.globl avx512_fp16_256b_fma_f16f16f16
-.globl avx512_fp16_128b_fma_f16f16f16
+#include "symbols.h"
+.text
 
-avx512_fp16_512b_fma_f16f16f16:
+.globl CPUFP_SYMBOL(avx512_fp16_512b_fma_f16f16f16)
+.globl CPUFP_SYMBOL(avx512_fp16_256b_fma_f16f16f16)
+.globl CPUFP_SYMBOL(avx512_fp16_128b_fma_f16f16f16)
+
+CPUFP_SYMBOL(avx512_fp16_512b_fma_f16f16f16):
     vpxord %zmm0, %zmm0, %zmm0
     vpxord %zmm1, %zmm1, %zmm1
     vpxord %zmm2, %zmm2, %zmm2
@@ -19,7 +22,7 @@ avx512_fp16_512b_fma_f16f16f16:
     vpxord %zmm13, %zmm13, %zmm13
     vpxord %zmm14, %zmm14, %zmm14
     vpxord %zmm15, %zmm15, %zmm15
-.avx512.fp16.512b.fma.f16f16f16.L1:
+L.avx512.fp16.512b.fma.f16f16f16.L1:
     vfmadd231ph %zmm0, %zmm0, %zmm0
     vfmadd231ph %zmm1, %zmm1, %zmm1
     vfmadd231ph %zmm2, %zmm2, %zmm2
@@ -37,10 +40,10 @@ avx512_fp16_512b_fma_f16f16f16:
     vfmadd231ph %zmm14, %zmm14, %zmm14
     vfmadd231ph %zmm15, %zmm15, %zmm15
     sub $0x1, %rdi
-    jne .avx512.fp16.512b.fma.f16f16f16.L1
+    jne L.avx512.fp16.512b.fma.f16f16f16.L1
     ret
 
-avx512_fp16_256b_fma_f16f16f16:
+CPUFP_SYMBOL(avx512_fp16_256b_fma_f16f16f16):
     vpxor %ymm0, %ymm0, %ymm0
     vpxor %ymm1, %ymm1, %ymm1
     vpxor %ymm2, %ymm2, %ymm2
@@ -57,7 +60,7 @@ avx512_fp16_256b_fma_f16f16f16:
     vpxor %ymm13, %ymm13, %ymm13
     vpxor %ymm14, %ymm14, %ymm14
     vpxor %ymm15, %ymm15, %ymm15
-.avx512.fp16.256b.fma.f16f16f16.L1:
+L.avx512.fp16.256b.fma.f16f16f16.L1:
     vfmadd231ph %ymm0, %ymm0, %ymm0
     vfmadd231ph %ymm1, %ymm1, %ymm1
     vfmadd231ph %ymm2, %ymm2, %ymm2
@@ -75,10 +78,10 @@ avx512_fp16_256b_fma_f16f16f16:
     vfmadd231ph %ymm14, %ymm14, %ymm14
     vfmadd231ph %ymm15, %ymm15, %ymm15
     sub $0x1, %rdi
-    jne .avx512.fp16.256b.fma.f16f16f16.L1
+    jne L.avx512.fp16.256b.fma.f16f16f16.L1
     ret
 
-avx512_fp16_128b_fma_f16f16f16:
+CPUFP_SYMBOL(avx512_fp16_128b_fma_f16f16f16):
     pxor %xmm0, %xmm0
     pxor %xmm1, %xmm1
     pxor %xmm2, %xmm2
@@ -95,7 +98,7 @@ avx512_fp16_128b_fma_f16f16f16:
     pxor %xmm13, %xmm13
     pxor %xmm14, %xmm14
     pxor %xmm15, %xmm15
-.avx512.fp16.128b.fma.f16f16f16.L1:
+L.avx512.fp16.128b.fma.f16f16f16.L1:
     vfmadd231ph %xmm0, %xmm0, %xmm0
     vfmadd231ph %xmm1, %xmm1, %xmm1
     vfmadd231ph %xmm2, %xmm2, %xmm2
@@ -113,6 +116,6 @@ avx512_fp16_128b_fma_f16f16f16:
     vfmadd231ph %xmm14, %xmm14, %xmm14
     vfmadd231ph %xmm15, %xmm15, %xmm15
     sub $0x1, %rdi
-    jne .avx512.fp16.128b.fma.f16f16f16.L1
+    jne L.avx512.fp16.128b.fma.f16f16f16.L1
     ret
 

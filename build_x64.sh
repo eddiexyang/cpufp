@@ -7,7 +7,17 @@ OUTPUT=${OUTPUT:-cpufp}
 CC=${CC:-cc}
 CXX=${CXX:-c++}
 arch_flags=(-march=x86-64 -mtune=generic)
-link_flags=(-pthread -Wl,-z,noexecstack)
+link_flags=(-pthread)
+os=$(uname -s)
+case "$os" in
+    Darwin)
+        arch_flags+=(-arch x86_64 "-mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET:-11.0}")
+        ;;
+    Linux)
+        link_flags+=(-Wl,-z,noexecstack)
+        ;;
+    *) echo 'Error: x64 builds support Linux and macOS.' >&2; exit 1 ;;
+esac
 mkdir -p "$BUILD_DIR"
 
 "$CXX" "${arch_flags[@]}" -std=c++11 -O3 -c common/table.cpp -o "$BUILD_DIR/table.o"
@@ -22,6 +32,9 @@ simd_objects=()
 for source in x64/asm/*.S; do
     simd=${source##*/}
     simd=${simd%.S}
+    if [[ $os == Darwin && $simd == _AMX_* ]]; then
+        continue
+    fi
     if "$CC" "${arch_flags[@]}" -c "$source" -o "$BUILD_DIR/$simd.o" 2>"$BUILD_DIR/$simd.log"; then
         simd_macros+=("-D$simd")
         simd_objects+=("$BUILD_DIR/$simd.o")

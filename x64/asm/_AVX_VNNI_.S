@@ -1,9 +1,12 @@
-.globl avx_vnni_256b_dp4a_s32u8s8
-.globl avx_vnni_256b_dp2a_s32s16s16
-.globl avx_vnni_128b_dp4a_s32u8s8
-.globl avx_vnni_128b_dp2a_s32s16s16
+#include "symbols.h"
+.text
 
-avx_vnni_256b_dp4a_s32u8s8:
+.globl CPUFP_SYMBOL(avx_vnni_256b_dp4a_s32u8s8)
+.globl CPUFP_SYMBOL(avx_vnni_256b_dp2a_s32s16s16)
+.globl CPUFP_SYMBOL(avx_vnni_128b_dp4a_s32u8s8)
+.globl CPUFP_SYMBOL(avx_vnni_128b_dp2a_s32s16s16)
+
+CPUFP_SYMBOL(avx_vnni_256b_dp4a_s32u8s8):
     vpxor %ymm0, %ymm0, %ymm0
     vpxor %ymm1, %ymm1, %ymm1
     vpxor %ymm2, %ymm2, %ymm2
@@ -20,7 +23,7 @@ avx_vnni_256b_dp4a_s32u8s8:
     vpxor %ymm13, %ymm13, %ymm13
     vpxor %ymm14, %ymm14, %ymm14
     vpxor %ymm15, %ymm15, %ymm15
-.avx.vnni.256b.dp4a.s32u8s8.L1:
+L.avx.vnni.256b.dp4a.s32u8s8.L1:
     {vex} vpdpbusd %ymm0, %ymm0, %ymm0
     {vex} vpdpbusd %ymm1, %ymm1, %ymm1
     {vex} vpdpbusd %ymm2, %ymm2, %ymm2
@@ -38,10 +41,10 @@ avx_vnni_256b_dp4a_s32u8s8:
     {vex} vpdpbusd %ymm14, %ymm14, %ymm14
     {vex} vpdpbusd %ymm15, %ymm15, %ymm15
     sub $0x1, %rdi
-    jne .avx.vnni.256b.dp4a.s32u8s8.L1
+    jne L.avx.vnni.256b.dp4a.s32u8s8.L1
     ret
 
-avx_vnni_256b_dp2a_s32s16s16:
+CPUFP_SYMBOL(avx_vnni_256b_dp2a_s32s16s16):
     vpxor %ymm0, %ymm0, %ymm0
     vpxor %ymm1, %ymm1, %ymm1
     vpxor %ymm2, %ymm2, %ymm2
@@ -58,7 +61,7 @@ avx_vnni_256b_dp2a_s32s16s16:
     vpxor %ymm13, %ymm13, %ymm13
     vpxor %ymm14, %ymm14, %ymm14
     vpxor %ymm15, %ymm15, %ymm15
-.avx.vnni.256b.dp2a.s32s16s16.L1:
+L.avx.vnni.256b.dp2a.s32s16s16.L1:
     {vex} vpdpwssd %ymm0, %ymm0, %ymm0
     {vex} vpdpwssd %ymm1, %ymm1, %ymm1
     {vex} vpdpwssd %ymm2, %ymm2, %ymm2
@@ -76,10 +79,10 @@ avx_vnni_256b_dp2a_s32s16s16:
     {vex} vpdpwssd %ymm14, %ymm14, %ymm14
     {vex} vpdpwssd %ymm15, %ymm15, %ymm15
     sub $0x1, %rdi
-    jne .avx.vnni.256b.dp2a.s32s16s16.L1
+    jne L.avx.vnni.256b.dp2a.s32s16s16.L1
     ret
 
-avx_vnni_128b_dp4a_s32u8s8:
+CPUFP_SYMBOL(avx_vnni_128b_dp4a_s32u8s8):
     pxor %xmm0, %xmm0
     pxor %xmm1, %xmm1
     pxor %xmm2, %xmm2
@@ -96,7 +99,7 @@ avx_vnni_128b_dp4a_s32u8s8:
     pxor %xmm13, %xmm13
     pxor %xmm14, %xmm14
     pxor %xmm15, %xmm15
-.avx.vnni.128b.dp4a.s32u8s8.L1:
+L.avx.vnni.128b.dp4a.s32u8s8.L1:
     {vex} vpdpbusd %xmm0, %xmm0, %xmm0
     {vex} vpdpbusd %xmm1, %xmm1, %xmm1
     {vex} vpdpbusd %xmm2, %xmm2, %xmm2
@@ -114,10 +117,10 @@ avx_vnni_128b_dp4a_s32u8s8:
     {vex} vpdpbusd %xmm14, %xmm14, %xmm14
     {vex} vpdpbusd %xmm15, %xmm15, %xmm15
     sub $0x1, %rdi
-    jne .avx.vnni.128b.dp4a.s32u8s8.L1
+    jne L.avx.vnni.128b.dp4a.s32u8s8.L1
     ret
 
-avx_vnni_128b_dp2a_s32s16s16:
+CPUFP_SYMBOL(avx_vnni_128b_dp2a_s32s16s16):
     pxor %xmm0, %xmm0
     pxor %xmm1, %xmm1
     pxor %xmm2, %xmm2
@@ -134,7 +137,7 @@ avx_vnni_128b_dp2a_s32s16s16:
     pxor %xmm13, %xmm13
     pxor %xmm14, %xmm14
     pxor %xmm15, %xmm15
-.avx.vnni.128b.dp2a.s32s16s16.L1:
+L.avx.vnni.128b.dp2a.s32s16s16.L1:
     {vex} vpdpwssd %xmm0, %xmm0, %xmm0
     {vex} vpdpwssd %xmm1, %xmm1, %xmm1
     {vex} vpdpwssd %xmm2, %xmm2, %xmm2
@@ -152,6 +155,6 @@ avx_vnni_128b_dp2a_s32s16s16:
     {vex} vpdpwssd %xmm14, %xmm14, %xmm14
     {vex} vpdpwssd %xmm15, %xmm15, %xmm15
     sub $0x1, %rdi
-    jne .avx.vnni.128b.dp2a.s32s16s16.L1
+    jne L.avx.vnni.128b.dp2a.s32s16s16.L1
     ret
 

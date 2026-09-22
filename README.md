@@ -12,7 +12,7 @@ It automatically detects the usable SIMD|DSA ISAs. On x86-64, detection runs at 
 | e2k           | yes |  no  |   no   |
 | loongarch64   | yes |  no  |   no   |
 | riscv64       | yes |  no  |   no   |
-| x86-64        | yes |  no  |   no   |
+| x86-64        | yes |  yes |   no   |
 
 ## Support x86-64 SIMD|DSA ISA
 
@@ -101,19 +101,27 @@ dst[63:0] := src3[63:0] + src1[63:0] * src2[63:0]
 
 ## How to build
 
-build x64 version (Linux):
+build x64 version (Linux or Intel macOS):
 
 ```sh
 ./build_x64.sh
 ./cpufp '--thread_pool=[0]'
 ```
 
+macOS builds require Xcode Command Line Tools and target macOS 11 or later by default
+(`MACOSX_DEPLOYMENT_TARGET` can override this with a compatible SDK).
+The same script can cross-compile an Intel binary on Apple Silicon; running it
+there requires Rosetta. For native Apple Silicon benchmarks, use `build_arm64.sh`.
+On macOS, thread-pool numbers are affinity tags (scheduler hints), not fixed CPU
+bindings. AMX benchmarks are Linux-only.
+
 The x64 build includes every kernel supported by the assembler, with a warning
 for newer ISAs it cannot assemble. `CC`, `CXX`, `BUILD_DIR` and `OUTPUT` can be
 set in the environment. Generic C/C++ code targets baseline x86-64. At runtime,
 CPUID leaf limits, XSAVE/OSXSAVE, XCR0, AVX512VL for narrower AVX-512 kernels,
 and Linux AMX permission determine which benchmarks are registered. AVX-512
-is skipped if its XCR0 state is not enabled.
+is conservatively skipped if its XCR0 state is not enabled, including macOS
+systems that enable this state lazily.
 
 AMX permission is requested again in the benchmark process before workers are
 created; failure skips AMX while retaining other usable ISAs. See the

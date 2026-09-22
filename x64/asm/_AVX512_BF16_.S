@@ -1,8 +1,11 @@
-.globl avx512_bf16_512b_dp2a_f32bf16bf16
-.globl avx512_bf16_256b_dp2a_f32bf16bf16
-.globl avx512_bf16_128b_dp2a_f32bf16bf16
+#include "symbols.h"
+.text
 
-avx512_bf16_512b_dp2a_f32bf16bf16:
+.globl CPUFP_SYMBOL(avx512_bf16_512b_dp2a_f32bf16bf16)
+.globl CPUFP_SYMBOL(avx512_bf16_256b_dp2a_f32bf16bf16)
+.globl CPUFP_SYMBOL(avx512_bf16_128b_dp2a_f32bf16bf16)
+
+CPUFP_SYMBOL(avx512_bf16_512b_dp2a_f32bf16bf16):
     vpxord %zmm0, %zmm0, %zmm0
     vpxord %zmm1, %zmm1, %zmm1
     vpxord %zmm2, %zmm2, %zmm2
@@ -20,7 +23,7 @@ avx512_bf16_512b_dp2a_f32bf16bf16:
     vpxord %zmm14, %zmm14, %zmm14
     vpxord %zmm15, %zmm15, %zmm15
     vpxord %zmm16, %zmm16, %zmm16
-.avx512.bf16.512b.dp2a.fp32bf16bf16.L1:
+L.avx512.bf16.512b.dp2a.fp32bf16bf16.L1:
     vdpbf16ps %zmm16, %zmm16, %zmm0
     vdpbf16ps %zmm16, %zmm16, %zmm1
     vdpbf16ps %zmm16, %zmm16, %zmm2
@@ -38,10 +41,10 @@ avx512_bf16_512b_dp2a_f32bf16bf16:
     vdpbf16ps %zmm16, %zmm16, %zmm14
     vdpbf16ps %zmm16, %zmm16, %zmm15
     sub $0x1, %rdi
-    jne .avx512.bf16.512b.dp2a.fp32bf16bf16.L1
+    jne L.avx512.bf16.512b.dp2a.fp32bf16bf16.L1
     ret
 
-avx512_bf16_256b_dp2a_f32bf16bf16:
+CPUFP_SYMBOL(avx512_bf16_256b_dp2a_f32bf16bf16):
     vpxor %ymm0, %ymm0, %ymm0
     vpxor %ymm1, %ymm1, %ymm1
     vpxor %ymm2, %ymm2, %ymm2
@@ -59,7 +62,7 @@ avx512_bf16_256b_dp2a_f32bf16bf16:
     vpxor %ymm14, %ymm14, %ymm14
     vpxor %ymm15, %ymm15, %ymm15
     vpxord %zmm16, %zmm16, %zmm16
-.avx512.bf16.256b.dp2a.fp32bf16bf16.L1:
+L.avx512.bf16.256b.dp2a.fp32bf16bf16.L1:
     vdpbf16ps %ymm16, %ymm16, %ymm0
     vdpbf16ps %ymm16, %ymm16, %ymm1
     vdpbf16ps %ymm16, %ymm16, %ymm2
@@ -77,10 +80,10 @@ avx512_bf16_256b_dp2a_f32bf16bf16:
     vdpbf16ps %ymm16, %ymm16, %ymm14
     vdpbf16ps %ymm16, %ymm16, %ymm15
     sub $0x1, %rdi
-    jne .avx512.bf16.256b.dp2a.fp32bf16bf16.L1
+    jne L.avx512.bf16.256b.dp2a.fp32bf16bf16.L1
     ret
 
-avx512_bf16_128b_dp2a_f32bf16bf16:
+CPUFP_SYMBOL(avx512_bf16_128b_dp2a_f32bf16bf16):
     pxor %xmm0, %xmm0
     pxor %xmm1, %xmm1
     pxor %xmm2, %xmm2
@@ -98,7 +101,7 @@ avx512_bf16_128b_dp2a_f32bf16bf16:
     pxor %xmm14, %xmm14
     pxor %xmm15, %xmm15
     vpxord %zmm16, %zmm16, %zmm16
-.avx512.bf16.128b.dp2a.fp32bf16bf16.L1:
+L.avx512.bf16.128b.dp2a.fp32bf16bf16.L1:
     vdpbf16ps %xmm16, %xmm16, %xmm0
     vdpbf16ps %xmm16, %xmm16, %xmm1
     vdpbf16ps %xmm16, %xmm16, %xmm2
@@ -116,6 +119,6 @@ avx512_bf16_128b_dp2a_f32bf16bf16:
     vdpbf16ps %xmm16, %xmm16, %xmm14
     vdpbf16ps %xmm16, %xmm16, %xmm15
     sub $0x1, %rdi
-    jne .avx512.bf16.128b.dp2a.fp32bf16bf16.L1
+    jne L.avx512.bf16.128b.dp2a.fp32bf16bf16.L1
     ret
 

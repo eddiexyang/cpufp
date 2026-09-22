@@ -1,9 +1,12 @@
-.globl fma_256b_fma_f32f32f32
-.globl fma_256b_fma_f64f64f64
-.globl fma_128b_fma_f32f32f32
-.globl fma_128b_fma_f64f64f64
+#include "symbols.h"
+.text
 
-fma_256b_fma_f32f32f32:
+.globl CPUFP_SYMBOL(fma_256b_fma_f32f32f32)
+.globl CPUFP_SYMBOL(fma_256b_fma_f64f64f64)
+.globl CPUFP_SYMBOL(fma_128b_fma_f32f32f32)
+.globl CPUFP_SYMBOL(fma_128b_fma_f64f64f64)
+
+CPUFP_SYMBOL(fma_256b_fma_f32f32f32):
     vxorps %ymm0, %ymm0, %ymm0
     vxorps %ymm1, %ymm1, %ymm1
     vxorps %ymm2, %ymm2, %ymm2
@@ -20,7 +23,7 @@ fma_256b_fma_f32f32f32:
     vxorps %ymm13, %ymm13, %ymm13
     vxorps %ymm14, %ymm14, %ymm14
     vxorps %ymm15, %ymm15, %ymm15
-.fma.256b.fma.f32f32f32.L1:
+L.fma.256b.fma.f32f32f32.L1:
     vfmadd231ps %ymm0, %ymm0, %ymm0
     vfmadd231ps %ymm1, %ymm1, %ymm1
     vfmadd231ps %ymm2, %ymm2, %ymm2
@@ -38,10 +41,10 @@ fma_256b_fma_f32f32f32:
     vfmadd231ps %ymm14, %ymm14, %ymm14
     vfmadd231ps %ymm15, %ymm15, %ymm15
     sub $0x1, %rdi
-    jne .fma.256b.fma.f32f32f32.L1
+    jne L.fma.256b.fma.f32f32f32.L1
     ret
 
-fma_256b_fma_f64f64f64:
+CPUFP_SYMBOL(fma_256b_fma_f64f64f64):
     vxorpd %ymm0, %ymm0, %ymm0
     vxorpd %ymm1, %ymm1, %ymm1
     vxorpd %ymm2, %ymm2, %ymm2
@@ -58,7 +61,7 @@ fma_256b_fma_f64f64f64:
     vxorpd %ymm13, %ymm13, %ymm13
     vxorpd %ymm14, %ymm14, %ymm14
     vxorpd %ymm15, %ymm15, %ymm15
-.fma.256b.fma.f64f64f64.L1:
+L.fma.256b.fma.f64f64f64.L1:
     vfmadd231pd %ymm0, %ymm0, %ymm0
     vfmadd231pd %ymm1, %ymm1, %ymm1
     vfmadd231pd %ymm2, %ymm2, %ymm2
@@ -76,10 +79,10 @@ fma_256b_fma_f64f64f64:
     vfmadd231pd %ymm14, %ymm14, %ymm14
     vfmadd231pd %ymm15, %ymm15, %ymm15
     sub $0x1, %rdi
-    jne .fma.256b.fma.f64f64f64.L1
+    jne L.fma.256b.fma.f64f64f64.L1
     ret
 
-fma_128b_fma_f32f32f32:
+CPUFP_SYMBOL(fma_128b_fma_f32f32f32):
     xorps %xmm0, %xmm0
     xorps %xmm1, %xmm1
     xorps %xmm2, %xmm2
@@ -96,7 +99,7 @@ fma_128b_fma_f32f32f32:
     xorps %xmm13, %xmm13
     xorps %xmm14, %xmm14
     xorps %xmm15, %xmm15
-.fma.128b.fma.f32f32f32.L1:
+L.fma.128b.fma.f32f32f32.L1:
     vfmadd231ps %xmm0, %xmm0, %xmm0
     vfmadd231ps %xmm1, %xmm1, %xmm1
     vfmadd231ps %xmm2, %xmm2, %xmm2
@@ -114,10 +117,10 @@ fma_128b_fma_f32f32f32:
     vfmadd231ps %xmm14, %xmm14, %xmm14
     vfmadd231ps %xmm15, %xmm15, %xmm15
     sub $0x1, %rdi
-    jne .fma.128b.fma.f32f32f32.L1
+    jne L.fma.128b.fma.f32f32f32.L1
     ret
 
-fma_128b_fma_f64f64f64:
+CPUFP_SYMBOL(fma_128b_fma_f64f64f64):
     xorpd %xmm0, %xmm0
     xorpd %xmm1, %xmm1
     xorpd %xmm2, %xmm2
@@ -134,7 +137,7 @@ fma_128b_fma_f64f64f64:
     xorpd %xmm13, %xmm13
     xorpd %xmm14, %xmm14
     xorpd %xmm15, %xmm15
-.fma.128b.fma.f64f64f64.L1:
+L.fma.128b.fma.f64f64f64.L1:
     vfmadd231pd %xmm0, %xmm0, %xmm0
     vfmadd231pd %xmm1, %xmm1, %xmm1
     vfmadd231pd %xmm2, %xmm2, %xmm2
@@ -152,6 +155,6 @@ fma_128b_fma_f64f64f64:
     vfmadd231pd %xmm14, %xmm14, %xmm14
     vfmadd231pd %xmm15, %xmm15, %xmm15
     sub $0x1, %rdi
-    jne .fma.128b.fma.f64f64f64.L1
+    jne L.fma.128b.fma.f64f64f64.L1
     ret
 

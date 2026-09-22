@@ -1,9 +1,12 @@
-.globl avx512f_512b_fma_f32f32f32
-.globl avx512f_512b_fma_f64f64f64
-.globl avx512f_512b_add_mul_f32f32_f32
-.globl avx512f_512b_add_mul_f64f64_f64
+#include "symbols.h"
+.text
 
-avx512f_512b_fma_f32f32f32:
+.globl CPUFP_SYMBOL(avx512f_512b_fma_f32f32f32)
+.globl CPUFP_SYMBOL(avx512f_512b_fma_f64f64f64)
+.globl CPUFP_SYMBOL(avx512f_512b_add_mul_f32f32_f32)
+.globl CPUFP_SYMBOL(avx512f_512b_add_mul_f64f64_f64)
+
+CPUFP_SYMBOL(avx512f_512b_fma_f32f32f32):
     vpxord %zmm0, %zmm0, %zmm0
     vpxord %zmm1, %zmm1, %zmm1
     vpxord %zmm2, %zmm2, %zmm2
@@ -20,7 +23,7 @@ avx512f_512b_fma_f32f32f32:
     vpxord %zmm13, %zmm13, %zmm13
     vpxord %zmm14, %zmm14, %zmm14
     vpxord %zmm15, %zmm15, %zmm15
-.avx512f.512b.fma.f32f32f32.L1:
+L.avx512f.512b.fma.f32f32f32.L1:
     vfmadd231ps %zmm0, %zmm0, %zmm0
     vfmadd231ps %zmm1, %zmm1, %zmm1
     vfmadd231ps %zmm2, %zmm2, %zmm2
@@ -38,10 +41,10 @@ avx512f_512b_fma_f32f32f32:
     vfmadd231ps %zmm14, %zmm14, %zmm14
     vfmadd231ps %zmm15, %zmm15, %zmm15
     sub $0x1, %rdi
-    jne .avx512f.512b.fma.f32f32f32.L1
+    jne L.avx512f.512b.fma.f32f32f32.L1
     ret
 
-avx512f_512b_fma_f64f64f64:
+CPUFP_SYMBOL(avx512f_512b_fma_f64f64f64):
     vpxord %zmm0, %zmm0, %zmm0
     vpxord %zmm1, %zmm1, %zmm1
     vpxord %zmm2, %zmm2, %zmm2
@@ -58,7 +61,7 @@ avx512f_512b_fma_f64f64f64:
     vpxord %zmm13, %zmm13, %zmm13
     vpxord %zmm14, %zmm14, %zmm14
     vpxord %zmm15, %zmm15, %zmm15
-.avx512f.512b.fma.f64f64f64.L1:
+L.avx512f.512b.fma.f64f64f64.L1:
     vfmadd231pd %zmm0, %zmm0, %zmm0
     vfmadd231pd %zmm1, %zmm1, %zmm1
     vfmadd231pd %zmm2, %zmm2, %zmm2
@@ -76,10 +79,10 @@ avx512f_512b_fma_f64f64f64:
     vfmadd231pd %zmm14, %zmm14, %zmm14
     vfmadd231pd %zmm15, %zmm15, %zmm15
     sub $0x1, %rdi
-    jne .avx512f.512b.fma.f64f64f64.L1
+    jne L.avx512f.512b.fma.f64f64f64.L1
     ret
 
-avx512f_512b_add_mul_f32f32_f32:
+CPUFP_SYMBOL(avx512f_512b_add_mul_f32f32_f32):
     vpxord %zmm0, %zmm0, %zmm0
     vpxord %zmm1, %zmm1, %zmm1
     vpxord %zmm2, %zmm2, %zmm2
@@ -96,7 +99,7 @@ avx512f_512b_add_mul_f32f32_f32:
     vpxord %zmm13, %zmm13, %zmm13
     vpxord %zmm14, %zmm14, %zmm14
     vpxord %zmm15, %zmm15, %zmm15
-.avx512f.512b.add.mul.f32f32.f32.L1:
+L.avx512f.512b.add.mul.f32f32.f32.L1:
     vmulps %zmm0, %zmm0, %zmm0
     vaddps %zmm1, %zmm1, %zmm1
     vmulps %zmm2, %zmm2, %zmm2
@@ -114,10 +117,10 @@ avx512f_512b_add_mul_f32f32_f32:
     vmulps %zmm14, %zmm14, %zmm14
     vaddps %zmm15, %zmm15, %zmm15
     sub $0x1, %rdi
-    jne .avx512f.512b.add.mul.f32f32.f32.L1
+    jne L.avx512f.512b.add.mul.f32f32.f32.L1
     ret
 
-avx512f_512b_add_mul_f64f64_f64:
+CPUFP_SYMBOL(avx512f_512b_add_mul_f64f64_f64):
     vpxord %zmm0, %zmm0, %zmm0
     vpxord %zmm1, %zmm1, %zmm1
     vpxord %zmm2, %zmm2, %zmm2
@@ -134,7 +137,7 @@ avx512f_512b_add_mul_f64f64_f64:
     vpxord %zmm13, %zmm13, %zmm13
     vpxord %zmm14, %zmm14, %zmm14
     vpxord %zmm15, %zmm15, %zmm15
-.avx512f.512b.add.mul.f64f64.f64.L1:
+L.avx512f.512b.add.mul.f64f64.f64.L1:
     vmulpd %zmm0, %zmm0, %zmm0
     vaddpd %zmm1, %zmm1, %zmm1
     vmulpd %zmm2, %zmm2, %zmm2
@@ -152,6 +155,6 @@ avx512f_512b_add_mul_f64f64_f64:
     vmulpd %zmm14, %zmm14, %zmm14
     vaddpd %zmm15, %zmm15, %zmm15
     sub $0x1, %rdi
-    jne .avx512f.512b.add.mul.f64f64.f64.L1
+    jne L.avx512f.512b.add.mul.f64f64.f64.L1
     ret
 

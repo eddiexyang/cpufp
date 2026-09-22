@@ -1,6 +1,9 @@
-.globl sse_128b_add_mul_f32f32_f32
+#include "symbols.h"
+.text
 
-sse_128b_add_mul_f32f32_f32:
+.globl CPUFP_SYMBOL(sse_128b_add_mul_f32f32_f32)
+
+CPUFP_SYMBOL(sse_128b_add_mul_f32f32_f32):
     xorps %xmm0, %xmm0
     xorps %xmm1, %xmm1
     xorps %xmm2, %xmm2
@@ -17,7 +20,7 @@ sse_128b_add_mul_f32f32_f32:
     xorps %xmm13, %xmm13
     xorps %xmm14, %xmm14
     xorps %xmm15, %xmm15
-.sse.128b.add.mul.f32f32_f32.L1:
+L.sse.128b.add.mul.f32f32_f32.L1:
     mulps %xmm0, %xmm0
     addps %xmm1, %xmm1
     mulps %xmm2, %xmm2
@@ -35,6 +38,6 @@ sse_128b_add_mul_f32f32_f32:
     addps %xmm13, %xmm13
     mulps %xmm14, %xmm14
     addps %xmm15, %xmm15
-    jne .sse.128b.add.mul.f32f32_f32.L1
+    jne L.sse.128b.add.mul.f32f32_f32.L1
     ret
 

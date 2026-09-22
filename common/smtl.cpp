@@ -6,7 +6,7 @@
 #ifdef __APPLE__
 #include <mach/thread_policy.h>
 #include <mach/thread_act.h>
-#include <mach/arm/kern_return.h>
+#include <mach/kern_return.h>
 #endif
 #include <pthread.h>
 #include <sched.h>
@@ -65,9 +65,10 @@ static void thread_bind(int cpu)
         exit(0);
     }
 #else
-    thread_policy_t cpu_set = &cpu;
+    thread_affinity_policy_data_t policy = {cpu + 1};
     kern_return_t res = thread_policy_set(pthread_mach_thread_np(pthread_self()),
-        THREAD_AFFINITY_POLICY, (thread_policy_t)&cpu_set, 1);
+        THREAD_AFFINITY_POLICY, reinterpret_cast<thread_policy_t>(&policy),
+        THREAD_AFFINITY_POLICY_COUNT);
     if (res == KERN_NOT_SUPPORTED) {
         fprintf(stderr, "Warning: cpu thread policy is not supported by OS\n");
         return;

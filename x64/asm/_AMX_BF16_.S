@@ -1,6 +1,9 @@
-.globl amx_bf16_mm_f32bf16bf16
+#include "symbols.h"
+.text
 
-amx_bf16_mm_f32bf16bf16:
+.globl CPUFP_SYMBOL(amx_bf16_mm_f32bf16bf16)
+
+CPUFP_SYMBOL(amx_bf16_mm_f32bf16bf16):
     ldtilecfg (%rsi)
     tilezero %tmm0
     tilezero %tmm1
@@ -8,12 +11,12 @@ amx_bf16_mm_f32bf16bf16:
     tilezero %tmm3
     tilezero %tmm4
     tilezero %tmm5
-.amx.bf16.mm.f32bf16bf16:
+L.amx.bf16.mm.f32bf16bf16:
     tdpbf16ps %tmm4, %tmm5, %tmm0
     tdpbf16ps %tmm4, %tmm5, %tmm1
     tdpbf16ps %tmm4, %tmm5, %tmm2
     tdpbf16ps %tmm4, %tmm5, %tmm3
     sub $0x1, %rdi
-    jne .amx.bf16.mm.f32bf16bf16
+    jne L.amx.bf16.mm.f32bf16bf16
     ret
 
