@@ -30,6 +30,7 @@ struct cpufp_cpu_state {
     struct cpufp_cpuid_regs leaf1, leaf7, leaf7_1;
     uint64_t xcr0;
     int amx_permission;
+    int darwin_avx512; /* Kernel advertises support despite lazy XCR0 state. */
 };
 
 /* Kept independent of the host so OS-disabled states can be regression-tested. */
@@ -41,7 +42,8 @@ static inline uint32_t cpufp_decode_features(const struct cpufp_cpu_state *s)
     const int avx = os_xsave && (s->leaf1.ecx & CPUFP_BIT(28)) &&
                     (s->xcr0 & UINT64_C(0x6)) == UINT64_C(0x6);
     const int avx512 = avx && (s->leaf7.ebx & CPUFP_BIT(16)) &&
-                    (s->xcr0 & UINT64_C(0xe6)) == UINT64_C(0xe6);
+                    ((s->xcr0 & UINT64_C(0xe6)) == UINT64_C(0xe6) ||
+                     s->darwin_avx512);
     if (s->leaf1.edx & CPUFP_BIT(25)) f |= CPUFP_SSE;
     if (s->leaf1.edx & CPUFP_BIT(26)) f |= CPUFP_SSE2;
     if (avx) {

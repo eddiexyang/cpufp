@@ -1,5 +1,9 @@
 #include "features.h"
 #include <stdio.h>
+#if defined(__APPLE__)
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#endif
 #if defined(__linux__)
 #include <unistd.h>
 #include <sys/syscall.h>
@@ -29,6 +33,16 @@ uint32_t cpufp_detect_features(int request_amx)
         __asm__ volatile ("xgetbv" : "=a"(lo), "=d"(hi) : "c"(0));
         s.xcr0 = ((uint64_t)hi << 32) | lo;
     }
+#if defined(__APPLE__)
+    /* Darwin enables AVX-512 thread state on first use. XCR0 alone can
+       therefore report a false negative before any AVX-512 instruction.
+       Apple documents hw.optional.avx512f as the availability query. */
+    int available = 0;
+    size_t size = sizeof(available);
+    if (sysctlbyname("hw.optional.avx512f", &available, &size, NULL, 0) == 0 &&
+        size == sizeof(available) && available != 0)
+        s.darwin_avx512 = 1;
+#endif
 #if defined(__linux__) && defined(SYS_arch_prctl)
     if ((s.leaf7.edx & CPUFP_BIT(24)) &&
         (s.xcr0 & UINT64_C(0x60000)) == UINT64_C(0x60000)) {

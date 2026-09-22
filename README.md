@@ -119,9 +119,11 @@ The x64 build includes every kernel supported by the assembler, with a warning
 for newer ISAs it cannot assemble. `CC`, `CXX`, `BUILD_DIR` and `OUTPUT` can be
 set in the environment. Generic C/C++ code targets baseline x86-64. At runtime,
 CPUID leaf limits, XSAVE/OSXSAVE, XCR0, AVX512VL for narrower AVX-512 kernels,
-and Linux AMX permission determine which benchmarks are registered. AVX-512
-is conservatively skipped if its XCR0 state is not enabled, including macOS
-systems that enable this state lazily.
+and Linux AMX permission determine which benchmarks are registered. Linux
+requires AVX-512 state to be enabled in XCR0. macOS also accepts a successful,
+nonzero `hw.optional.avx512f` query because Darwin enables AVX-512 state lazily
+on first use. CPU feature bits and AVX512VL checks still apply. See Apple's
+[CPU feature detection guidance](https://developer.apple.com/documentation/apple-silicon/addressing-architectural-differences-in-your-macos-code).
 
 AMX permission is requested again in the benchmark process before workers are
 created; failure skips AMX while retaining other usable ISAs. See the

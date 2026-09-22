@@ -51,6 +51,29 @@ int main(void)
         assert(!(f & (CPUFP_AVX512F | CPUFP_AVX512VL | CPUFP_AVX512_VNNI |
                       CPUFP_AVX512_BF16 | CPUFP_AVX512_FP16)));
     }
+    /* Darwin lazily enables opmask/ZMM state; Linux still needs XCR0. */
+    s = full_state();
+    s.xcr0 = 7;
+    assert(!(cpufp_decode_features(&s) & CPUFP_AVX512F));
+    s.darwin_avx512 = 1;
+    f = cpufp_decode_features(&s);
+    assert(f & CPUFP_AVX512F);
+    assert(cpufp_feature_available(f, "AVX512_VNNI", "512b"));
+    assert(cpufp_feature_available(f, "AVX512_VNNI", "256b"));
+    assert(cpufp_feature_available(f, "AVX512_VNNI", "128b"));
+    assert(!(f & amx));
+    s.leaf7.ebx &= ~CPUFP_BIT(31);
+    assert(!cpufp_feature_available(cpufp_decode_features(&s), "AVX512_VNNI", "128b"));
+    s.leaf7.ebx &= ~CPUFP_BIT(16);
+    assert(!(cpufp_decode_features(&s) & CPUFP_AVX512F));
+    s = full_state();
+    s.darwin_avx512 = 1;
+    s.xcr0 = 3;
+    assert(!(cpufp_decode_features(&s) & CPUFP_AVX512F));
+    s.xcr0 = 7;
+    s.leaf1.ecx &= ~CPUFP_BIT(27);
+    assert(!(cpufp_decode_features(&s) & CPUFP_AVX512F));
+
     s = full_state();
     s.leaf7.ebx &= ~CPUFP_BIT(16);
     assert(!(cpufp_decode_features(&s) & CPUFP_AVX512_VNNI));
